@@ -16,7 +16,7 @@ Node.js framework NestJS project structure
 
 ## Config Database MSSQL
 
-### **🔹 Tạo Database bằng SQL Server**
+### **🔹 Create Database by SQL Server**
 Before running the application, we need to create database `HIENTEST`.  
 📌 **Run SQL to create database and table `tblphone`:**
 
