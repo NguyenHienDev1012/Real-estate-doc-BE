@@ -45,9 +45,36 @@ export class PhoneService {
     return result;
   }
 
-  public async uploadFile(requestBody: any, uploadedFile: Express.Multer.File): Promise<any> {
+  public async getAllPhonesKeyword(
+    keyword: string,
+    limit: number,
+    page: number,
+    orderBy: string,
+    orderDesc: string
+  ): Promise<Phone[]> {
+    return await this.phoneRepository
+      .createQueryBuilder('phone')
+      .where('phone.name LIKE :keyword', {
+        keyword: `%${keyword}%`
+      })
+      .orderBy(`phone.${orderBy}`, orderDesc.toUpperCase() === 'DESC' ? 'DESC' : 'ASC')
+      .take(limit)
+      .skip((page - 1) * limit)
+      .getMany();
+  }
+
+  public async uploadFile(
+    requestBody: PostPhoneRequest,
+    uploadedFile: Express.Multer.File
+  ): Promise<Phone[]> {
     //TO DO
-    console.log(requestBody, uploadedFile);
+    let attachFileName = '';
+    let attachFilePath = '';
+    if (uploadedFile) {
+      attachFileName = uploadedFile.originalname;
+      attachFilePath = uploadedFile.path;
+    }
+    console.log(requestBody, attachFileName, attachFilePath);
     const result = [];
     return result;
   }

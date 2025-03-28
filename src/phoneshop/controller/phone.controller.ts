@@ -7,6 +7,7 @@ import {
   Param,
   Post,
   Put,
+  Query,
   Req,
   Res,
   UploadedFile,
@@ -19,6 +20,7 @@ import { Response } from 'express';
 import { PostPhoneRequest, PutPhoneRequest } from './dto';
 import { FileInterceptor } from '@nestjs/platform-express';
 import { Express } from 'express';
+import { GetPhonesQuery } from './get-phones-query';
 
 @ApiTags('phones')
 @Controller('phones')
@@ -73,7 +75,7 @@ export class PhoneController extends BaseController {
    */
   @Put('/update/:id')
   @ApiResponse({ status: HttpStatus.OK, description: 'Success' })
-  public async editPost(
+  public async editPhone(
     @Req() req: Express.Request,
     @Res() response: Response,
     @Param('id') id: number,
@@ -81,6 +83,25 @@ export class PhoneController extends BaseController {
   ) {
     const model = await this.phoneService.updatePhone(id, requestBody);
     return this.responseJson(response, { data: model });
+  }
+
+  /**
+   * search phones
+   * @param response
+   * @param keyword
+   * @returns
+   */
+  @Get()
+  @ApiResponse({ status: HttpStatus.OK, description: 'Success' })
+  public async getPhonesByKeyword(@Res() response: Response, @Query() query: GetPhonesQuery) {
+    const models = await this.phoneService.getAllPhonesKeyword(
+      query.keyword,
+      query.limit,
+      query.page,
+      query.orderBy,
+      query.orderDesc
+    );
+    return this.responseJson(response, { data: models });
   }
 
   @Post('/upload-file')
