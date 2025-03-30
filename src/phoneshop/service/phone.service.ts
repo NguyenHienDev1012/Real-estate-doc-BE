@@ -1,4 +1,4 @@
-import { Injectable, NotFoundException } from '@nestjs/common';
+import { Injectable, NotFoundException, Logger } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { Phone } from '../entity';
@@ -6,6 +6,8 @@ import { PostPhoneRequest, PutPhoneRequest } from '../controller/dto';
 
 @Injectable()
 export class PhoneService {
+  private readonly logger = new Logger(PhoneService.name);
+
   constructor(
     @InjectRepository(Phone)
     private readonly phoneRepository: Repository<Phone>
@@ -23,18 +25,22 @@ export class PhoneService {
     return this.phoneRepository.save(phone);
   }
 
-  public async updatePhone(id: number, phoneItem: PutPhoneRequest): Promise<any> {
-    const phone = new Phone();
-    const isExistedPhone = await this.phoneRepository.findOne({ where: { id } });
-    if (!isExistedPhone) {
+  private async findPhoneById(id: number): Promise<Phone> {
+    const phone = await this.phoneRepository.findOne({ where: { id } });
+    if (!phone) {
       throw new NotFoundException(`Phone with id ${id} not found`);
     }
+    return phone;
+  }
+
+  public async updatePhone(id: number, phoneItem: PutPhoneRequest): Promise<Phone> {
+    const phone = await this.findPhoneById(id);
     phone.name = phoneItem.name;
     phone.price = phoneItem.price;
     phone.category = phoneItem.category;
-    await this.phoneRepository.update(id, phone);
-    const updatedPhone = await this.phoneRepository.findOne({ where: { id } });
-    return updatedPhone;
+    await this.phoneRepository.save(phone);
+    this.logger.log(`Phone with id ${id} updated successfully`);
+    return phone;
   }
 
   public async softDeletePhone(id: number): Promise<any> {
@@ -67,15 +73,14 @@ export class PhoneService {
     requestBody: PostPhoneRequest,
     uploadedFile: Express.Multer.File
   ): Promise<Phone[]> {
-    //TO DO
-    let attachFileName = '';
-    let attachFilePath = '';
-    if (uploadedFile) {
-      attachFileName = uploadedFile.originalname;
-      attachFilePath = uploadedFile.path;
+    if (!uploadedFile) {
+      throw new Error('No file uploaded');
     }
-    console.log(requestBody, attachFileName, attachFilePath);
-    const result = [];
-    return result;
+    const attachFileName = uploadedFile.originalname;
+    const attachFilePath = uploadedFile.path;
+
+    this.logger.log(`File uploaded: ${attachFileName} at ${attachFilePath}`);
+    // Implement logic to save file details to the database or storage
+    return [];
   }
 }
